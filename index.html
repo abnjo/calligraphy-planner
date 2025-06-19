@@ -1,130 +1,428 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Calligraphia Planner</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont/tabler-icons.min.css">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, rgba(20,20,20,0.8), rgba(30,30,30,0.7));
-      backdrop-filter: blur(12px);
-      color: #fff;
-      padding: 1rem;
-    }
-    .glass-panel {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 16px;
-      padding: 1rem;
-      margin: 1rem 0;
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-    }
-    label {
-      display: flex;
-      align-items: center;
-      margin-bottom: 0.5rem;
-    }
-    label i {
-      margin-right: 0.5rem;
-    }
-    input, select {
-      width: 100%;
-      padding: 0.4rem;
-      margin-top: 0.2rem;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      color: #fff;
-    }
-    .controls {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-    canvas {
-      width: 100%;
-      height: auto;
-      background-color: white;
-    }
-    .unit-toggle {
-      margin-bottom: 1rem;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calligraphy Manuscript Planner</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --glass-color: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --text-color: #e0e0e0;
+            --primary-color: #8a2be2;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .controls {
+            width: 350px;
+            padding: 20px;
+            background: var(--glass-color);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group h3 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+
+        .control-group h3 i {
+            margin-right: 10px;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .input-wrapper label {
+            flex-basis: 120px;
+            font-size: 0.9em;
+        }
+
+        .input-wrapper input[type="number"],
+        .input-wrapper select {
+            width: 80px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .input-wrapper input[type="range"] {
+            flex-grow: 1;
+            margin: 0 10px;
+        }
+
+        .pm-buttons button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 25px;
+            height: 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .unit-switcher {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .unit-switcher button {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .canvas-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: radial-gradient(circle, #333 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        canvas {
+            background: white;
+            box-shadow: 0 0 30px var(--shadow-color);
+        }
+
+    </style>
 </head>
 <body>
-  <h1>Calligraphia</h1>  <div class="glass-panel">
-    <label><i class="ti ti-typography"></i> App Name: <input type="text" value="Calligraphia" disabled></label>
-  </div>  <div class="glass-panel controls">
-    <label><i class="ti ti-list-numbers"></i> Number of Characters: <input type="number" id="charCount" value="100"></label>
-    <label><i class="ti ti-ruler"></i> Box Width: <input type="number" id="boxWidth" value="10"></label>
-    <label><i class="ti ti-ruler"></i> Box Height: <input type="number" id="boxHeight" value="15"></label>
-    <label><i class="ti ti-rotate"></i> Box Angle (°): <input type="number" id="boxAngle" value="0"></label>
-    <label><i class="ti ti-arrows-maximize"></i> Spacing Between Boxes: <input type="number" id="boxSpacing" value="2"></label>
-    <label><i class="ti ti-arrows-vertical"></i> Spacing Between Lines: <input type="number" id="lineSpacing" value="10"></label>
-    <label><i class="ti ti-file"></i> Paper Size:
-      <select id="paperSize">
-        <option value="A4">A4 (210mm x 297mm)</option>
-        <option value="Letter">Letter (8.5in x 11in)</option>
-      </select>
-    </label>
-    <label><i class="ti ti-crop"></i> Margins (Top, Right, Bottom, Left): <input type="text" id="margins" value="10,10,10,10"></label>
-    <label><i class="ti ti-grid-dots"></i> Aspect Ratio (w:h): <input type="text" id="aspectRatio" placeholder="Auto" /></label>
-    <label><i class="ti ti-layout-grid"></i> Subdivision Ratio (e.g. 2:3): <input type="text" id="subdivRatio" placeholder="Auto" /></label>
-  </div>  <div class="glass-panel">
-    <label class="unit-toggle"><input type="checkbox" id="unitSwitch"> Use Imperial Units</label>
-    <button onclick="autoFitBoxes()">Auto Fit Boxes</button>
-  </div>  <div class="glass-panel">
-    <canvas id="layoutCanvas" width="800" height="1100"></canvas>
-  </div>  <script>
-    const canvas = document.getElementById('layoutCanvas');
-    const ctx = canvas.getContext('2d');
 
-    function mmToPx(mm) { return mm * 3.78; }
-    function inToPx(inch) { return inch * 96; }
+    <div class="controls">
+        <h2><i class="fas fa-pen-nib"></i> Manuscript Planner</h2>
 
-    function parseMargin(input) {
-      return input.split(',').map(v => parseFloat(v.trim()));
-    }
+        <div class="unit-switcher">
+            <button id="unit-toggle">Switch to Imperial</button>
+        </div>
 
-    function autoFitBoxes() {
-      const chars = parseInt(document.getElementById('charCount').value);
-      const spacing = parseFloat(document.getElementById('boxSpacing').value);
-      const paper = document.getElementById('paperSize').value;
-      const margins = parseMargin(document.getElementById('margins').value);
-      let width = 210, height = 297; // mm
-      if (paper === 'Letter') { width = 215.9; height = 279.4; } // in mm
+        <div class="control-group">
+            <h3><i class="fas fa-text-width"></i> Characters</h3>
+            <div class="input-wrapper">
+                <label for="num-chars">Number of Chars</label>
+                <input type="number" id="num-chars" value="150" min="1">
+                <button class="pm-buttons" onclick="adjustValue('num-chars', -1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('num-chars', 1)">+</button>
+            </div>
+        </div>
 
-      const usableWidth = width - margins[1] - margins[3];
-      const usableHeight = height - margins[0] - margins[2];
+        <div class="control-group">
+            <h3><i class="fas fa-box"></i> Character Box</h3>
+            <div class="input-wrapper">
+                <label for="box-width">Width</label>
+                <input type="number" id="box-width" value="10" step="0.1">
+                <input type="range" id="box-width-slider" min="1" max="50" value="10" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('box-width', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-width', 0.1)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="box-height">Height</label>
+                <input type="number" id="box-height" value="15" step="0.1">
+                <input type="range" id="box-height-slider" min="1" max="50" value="15" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('box-height', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-height', 0.1)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="box-angle">Angle</label>
+                <input type="number" id="box-angle" value="0" step="1">
+                <input type="range" id="box-angle-slider" min="-45" max="45" value="0" step="1">
+                <button class="pm-buttons" onclick="adjustValue('box-angle', -1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-angle', 1)">+</button>
+            </div>
+        </div>
 
-      let cols = Math.floor(Math.sqrt(chars * usableWidth / usableHeight));
-      let rows = Math.ceil(chars / cols);
-      let boxW = (usableWidth - (cols - 1) * spacing) / cols;
-      let boxH = (usableHeight - (rows - 1) * spacing) / rows;
+        <div class="control-group">
+            <h3><i class="fas fa-arrows-alt-h"></i> Spacing</h3>
+            <div class="input-wrapper">
+                <label for="box-spacing">Between Boxes</label>
+                <input type="number" id="box-spacing" value="5" step="0.1">
+                 <input type="range" id="box-spacing-slider" min="0" max="30" value="5" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('box-spacing', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-spacing', 0.1)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="line-spacing">Between Lines</label>
+                <input type="number" id="line-spacing" value="10" step="0.1">
+                <input type="range" id="line-spacing-slider" min="0" max="50" value="10" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('line-spacing', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('line-spacing', 0.1)">+</button>
+            </div>
+        </div>
 
-      document.getElementById('boxWidth').value = boxW.toFixed(2);
-      document.getElementById('boxHeight').value = boxH.toFixed(2);
+        <div class="control-group">
+            <h3><i class="far fa-file-alt"></i> Paper</h3>
+            <div class="input-wrapper">
+                <label for="paper-size">Paper Size</label>
+                <select id="paper-size">
+                    <option value="210,297">A4 (210x297mm)</option>
+                    <option value="297,420">A3 (297x420mm)</option>
+                    <option value="148,210">A5 (148x210mm)</option>
+                    <option value="215.9,279.4">Letter (8.5x11in)</option>
+                    <option value="215.9,355.6">Legal (8.5x14in)</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div id="custom-paper-size">
+                <div class="input-wrapper">
+                    <label for="paper-width">Width</label>
+                    <input type="number" id="paper-width" value="210" step="0.1">
+                </div>
+                <div class="input-wrapper">
+                    <label for="paper-height">Height</label>
+                    <input type="number" id="paper-height" value="297" step="0.1">
+                </div>
+            </div>
+        </div>
 
-      renderBoxes(boxW, boxH, rows, cols, spacing, margins);
-    }
+        <div class="control-group">
+            <h3><i class="fas fa-border-style"></i> Margins</h3>
+            <div class="input-wrapper">
+                <label for="margin-top">Top</label>
+                <input type="number" id="margin-top" value="20" step="0.1">
+                <input type="range" id="margin-top-slider" min="0" max="100" value="20" step="0.1">
+            </div>
+            <div class="input-wrapper">
+                <label for="margin-bottom">Bottom</label>
+                <input type="number" id="margin-bottom" value="20" step="0.1">
+                <input type="range" id="margin-bottom-slider" min="0" max="100" value="20" step="0.1">
+            </div>
+            <div class="input-wrapper">
+                <label for="margin-left">Left</label>
+                <input type="number" id="margin-left" value="20" step="0.1">
+                <input type="range" id="margin-left-slider" min="0" max="100" value="20" step="0.1">
+            </div>
+            <div class="input-wrapper">
+                <label for="margin-right">Right</label>
+                <input type="number" id="margin-right" value="20" step="0.1">
+                <input type="range" id="margin-right-slider" min="0" max="100" value="20" step="0.1">
+            </div>
+        </div>
+    </div>
 
-    function renderBoxes(boxW, boxH, rows, cols, spacing, margins) {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const scale = mmToPx(1);
+    <div class="canvas-container">
+        <canvas id="manuscript-canvas"></canvas>
+    </div>
 
-      let startX = mmToPx(margins[3]);
-      let startY = mmToPx(margins[0]);
+    <script>
+        const canvas = document.getElementById('manuscript-canvas');
+        const ctx = canvas.getContext('2d');
 
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          let x = startX + col * (boxW + spacing) * scale;
-          let y = startY + row * (boxH + spacing) * scale;
-          ctx.strokeRect(x, y, boxW * scale, boxH * scale);
+        const controls = {
+            numChars: document.getElementById('num-chars'),
+            boxWidth: document.getElementById('box-width'),
+            boxHeight: document.getElementById('box-height'),
+            boxAngle: document.getElementById('box-angle'),
+            boxSpacing: document.getElementById('box-spacing'),
+            lineSpacing: document.getElementById('line-spacing'),
+            paperSize: document.getElementById('paper-size'),
+            paperWidth: document.getElementById('paper-width'),
+            paperHeight: document.getElementById('paper-height'),
+            marginTop: document.getElementById('margin-top'),
+            marginBottom: document.getElementById('margin-bottom'),
+            marginLeft: document.getElementById('margin-left'),
+            marginRight: document.getElementById('margin-right'),
+        };
+        
+        const sliders = {
+            boxWidthSlider: document.getElementById('box-width-slider'),
+            boxHeightSlider: document.getElementById('box-height-slider'),
+            boxAngleSlider: document.getElementById('box-angle-slider'),
+            boxSpacingSlider: document.getElementById('box-spacing-slider'),
+            lineSpacingSlider: document.getElementById('line-spacing-slider'),
+            marginTopSlider: document.getElementById('margin-top-slider'),
+            marginBottomSlider: document.getElementById('margin-bottom-slider'),
+            marginLeftSlider: document.getElementById('margin-left-slider'),
+            marginRightSlider: document.getElementById('margin-right-slider'),
         }
-      }
-    }
-  </script></body>
+
+        let isImperial = false;
+        const mmToIn = 0.0393701;
+        const inToMm = 25.4;
+
+        function adjustValue(id, amount) {
+            const input = document.getElementById(id);
+            let currentValue = parseFloat(input.value);
+            if (isNaN(currentValue)) currentValue = 0;
+            input.value = (currentValue + amount).toFixed(1);
+            updateSliders();
+            draw();
+        }
+        
+        function updateSliders() {
+            for (const key in sliders) {
+                const slider = sliders[key];
+                const inputId = key.replace('Slider', '');
+                const input = document.getElementById(inputId);
+                if(input) {
+                    slider.value = input.value;
+                }
+            }
+        }
+        
+        function updateInputsFromSliders() {
+            for (const key in sliders) {
+                const slider = sliders[key];
+                const inputId = key.replace('Slider', '');
+                const input = document.getElementById(inputId);
+                if(input) {
+                    input.value = slider.value;
+                }
+            }
+            draw();
+        }
+
+        function toggleUnits() {
+            isImperial = !isImperial;
+            const unitToggle = document.getElementById('unit-toggle');
+            unitToggle.textContent = isImperial ? 'Switch to Metric' : 'Switch to Imperial';
+            
+            const fieldsToConvert = ['boxWidth', 'boxHeight', 'boxSpacing', 'lineSpacing', 'paperWidth', 'paperHeight', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight'];
+            
+            fieldsToConvert.forEach(field => {
+                const input = controls[field];
+                let value = parseFloat(input.value);
+                if (isImperial) {
+                    value *= mmToIn;
+                } else {
+                    value *= inToMm;
+                }
+                input.value = value.toFixed(2);
+            });
+            updateSliders();
+            draw();
+        }
+
+        function handlePaperSizeChange() {
+            const selected = controls.paperSize.value;
+            if (selected === 'custom') {
+                document.getElementById('custom-paper-size').style.display = 'block';
+            } else {
+                document.getElementById('custom-paper-size').style.display = 'none';
+                const [width, height] = selected.split(',').map(parseFloat);
+                controls.paperWidth.value = width;
+                controls.paperHeight.value = height;
+            }
+            draw();
+        }
+
+        function draw() {
+            let paperWidth = parseFloat(controls.paperWidth.value);
+            let paperHeight = parseFloat(controls.paperHeight.value);
+            
+            if (isImperial) {
+                paperWidth *= inToMm;
+                paperHeight *= inToMm;
+            }
+
+            const canvasContainer = document.querySelector('.canvas-container');
+            const containerWidth = canvasContainer.clientWidth - 40;
+            const containerHeight = canvasContainer.clientHeight - 40;
+
+            const scale = Math.min(containerWidth / paperWidth, containerHeight / paperHeight);
+
+            canvas.width = paperWidth * scale;
+            canvas.height = paperHeight * scale;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw margins
+            let marginTop = parseFloat(controls.marginTop.value) * scale;
+            let marginBottom = parseFloat(controls.marginBottom.value) * scale;
+            let marginLeft = parseFloat(controls.marginLeft.value) * scale;
+            let marginRight = parseFloat(controls.marginRight.value) * scale;
+            
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(marginLeft, marginTop, canvas.width - marginLeft - marginRight, canvas.height - marginTop - marginBottom);
+            ctx.setLineDash([]);
+
+            // Draw character boxes
+            const numChars = parseInt(controls.numChars.value);
+            let boxWidth = parseFloat(controls.boxWidth.value) * scale;
+            let boxHeight = parseFloat(controls.boxHeight.value) * scale;
+            let boxSpacing = parseFloat(controls.boxSpacing.value) * scale;
+            let lineSpacing = parseFloat(controls.lineSpacing.value) * scale;
+            const angle = parseFloat(controls.boxAngle.value) * (Math.PI / 180);
+
+            let x = marginLeft;
+            let y = marginTop;
+
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < numChars; i++) {
+                if (x + boxWidth > canvas.width - marginRight) {
+                    x = marginLeft;
+                    y += boxHeight + lineSpacing;
+                }
+                
+                if (y + boxHeight > canvas.height - marginBottom) {
+                    break; 
+                }
+
+                ctx.save();
+                ctx.translate(x + boxWidth / 2, y + boxHeight / 2);
+                ctx.rotate(angle);
+                ctx.strokeRect(-boxWidth / 2, -boxHeight / 2, boxWidth, boxHeight);
+                ctx.restore();
+                
+                x += boxWidth + boxSpacing;
+            }
+        }
+        
+        Object.values(controls).forEach(control => {
+            control.addEventListener('change', draw);
+            control.addEventListener('input', draw);
+        });
+        
+        Object.values(sliders).forEach(slider => {
+           slider.addEventListener('input', updateInputsFromSliders);
+        });
+
+        document.getElementById('unit-toggle').addEventListener('click', toggleUnits);
+        document.getElementById('paper-size').addEventListener('change', handlePaperSizeChange);
+
+        window.addEventListener('resize', draw);
+        
+        handlePaperSizeChange();
+        updateSliders();
+        draw();
+    </script>
+
+</body>
 </html>
+

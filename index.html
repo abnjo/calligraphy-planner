@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calligraphy Manuscript Planner</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --glass-color: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --text-color: #e0e0e0;
+            --primary-color: #8a2be2;
+            --secondary-color: #4CAF50;
+            --shadow-color: rgba(0, 0, 0, 0.5);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .controls {
+            width: 350px;
+            padding: 20px;
+            background: var(--glass-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .control-group {
+            margin-bottom: 20px;
+        }
+
+        .control-group h3 {
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            font-size: 1.1em;
+            display: flex;
+            align-items: center;
+        }
+
+        .control-group h3 i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .input-wrapper label {
+            flex-basis: 120px;
+            font-size: 0.9em;
+        }
+
+        .input-wrapper input[type="number"],
+        .input-wrapper select {
+            width: 80px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 5px;
+            border-radius: 5px;
+            margin-right: 5px;
+        }
+        
+        .input-wrapper input[type="number"]::-webkit-inner-spin-button, 
+        .input-wrapper input[type="number"]::-webkit-outer-spin-button { 
+          -webkit-appearance: none; 
+          margin: 0; 
+        }
+        
+        .input-wrapper input[type="number"] {
+          -moz-appearance: textfield;
+        }
+
+        .pm-buttons button {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            width: 25px;
+            height: 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-left: 2px;
+        }
+
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background: var(--secondary-color);
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+        }
+
+        .unit-switcher {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        .unit-switcher button {
+            background: var(--primary-color);
+            border: none;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .canvas-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            background-image: radial-gradient(circle, #333 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        canvas {
+            background: white;
+            box-shadow: 0 0 30px var(--shadow-color);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="controls">
+        <h2><i class="fas fa-pen-nib"></i> Manuscript Planner</h2>
+
+        <div class="unit-switcher">
+            <button id="unit-toggle">Switch to Imperial</button>
+        </div>
+
+        <div class="control-group">
+            <h3><i class="fas fa-text-height"></i> Characters</h3>
+            <div class="input-wrapper">
+                <label for="num-chars">Number of Chars</label>
+                <input type="number" id="num-chars" value="150" min="1">
+                <button class="pm-buttons" onclick="adjustValue('num-chars', -1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('num-chars', 1)">+</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3><i class="fas fa-box"></i> Character Box</h3>
+            <div class="input-wrapper">
+                <label for="box-width">Width</label>
+                <input type="number" id="box-width" value="10" step="0.1" oninput="updateAspectRatio()">
+                <button class="pm-buttons" onclick="adjustValue('box-width', -0.1, true)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-width', 0.1, true)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="box-height">Height</label>
+                <input type="number" id="box-height" value="15" step="0.1" oninput="updateAspectRatio()">
+                <button class="pm-buttons" onclick="adjustValue('box-height', -0.1, true)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-height', 0.1, true)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="box-aspect-ratio">Aspect Ratio</label>
+                <input type="number" id="box-aspect-ratio" value="0.67" step="0.01">
+                <button class="pm-buttons" onclick="adjustValue('box-aspect-ratio', -0.01)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-aspect-ratio', 0.01)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="box-angle">Angle (°)</label>
+                <input type="number" id="box-angle" value="0" step="1">
+                <button class="pm-buttons" onclick="adjustValue('box-angle', -1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-angle', 1)">+</button>
+            </div>
+             <button id="autofit-btn" class="action-button"><i class="fas fa-magic"></i> Auto-fit Boxes</button>
+        </div>
+
+        <div class="control-group">
+            <h3><i class="fas fa-arrows-alt-h"></i> Spacing</h3>
+            <div class="input-wrapper">
+                <label for="box-spacing">Between Boxes</label>
+                <input type="number" id="box-spacing" value="5" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('box-spacing', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('box-spacing', 0.1)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="line-spacing">Between Lines</label>
+                <input type="number" id="line-spacing" value="10" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('line-spacing', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('line-spacing', 0.1)">+</button>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3><i class="far fa-file-alt"></i> Paper</h3>
+            <div class="input-wrapper">
+                <label for="paper-size">Paper Size</label>
+                <select id="paper-size">
+                    <option value="210,297">A4 (210x297mm)</option>
+                    <option value="297,420">A3 (297x420mm)</option>
+                    <option value="148,210">A5 (148x210mm)</option>
+                    <option value="215.9,279.4">Letter (8.5x11in)</option>
+                    <option value="215.9,355.6">Legal (8.5x14in)</option>
+                    <option value="custom">Custom</option>
+                </select>
+            </div>
+            <div id="custom-paper-size" style="display:none;">
+                <div class="input-wrapper">
+                    <label for="paper-width">Width</label>
+                    <input type="number" id="paper-width" value="210" step="0.1">
+                </div>
+                <div class="input-wrapper">
+                    <label for="paper-height">Height</label>
+                    <input type="number" id="paper-height" value="297" step="0.1">
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3><i class="fas fa-border-style"></i> Margins</h3>
+            <div class="input-wrapper">
+                <label for="margin-top">Top</label>
+                <input type="number" id="margin-top" value="20" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('margin-top', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('margin-top', 0.1)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="margin-bottom">Bottom</label>
+                <input type="number" id="margin-bottom" value="20" step="0.1">
+                 <button class="pm-buttons" onclick="adjustValue('margin-bottom', -0.1)">-</button>
+                 <button class="pm-buttons" onclick="adjustValue('margin-bottom', 0.1)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="margin-left">Left</label>
+                <input type="number" id="margin-left" value="20" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('margin-left', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('margin-left', 0.1)">+</button>
+            </div>
+            <div class="input-wrapper">
+                <label for="margin-right">Right</label>
+                <input type="number" id="margin-right" value="20" step="0.1">
+                <button class="pm-buttons" onclick="adjustValue('margin-right', -0.1)">-</button>
+                <button class="pm-buttons" onclick="adjustValue('margin-right', 0.1)">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="canvas-container">
+        <canvas id="manuscript-canvas"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('manuscript-canvas');
+        const ctx = canvas.getContext('2d');
+
+        const controls = {
+            numChars: document.getElementById('num-chars'),
+            boxWidth: document.getElementById('box-width'),
+            boxHeight: document.getElementById('box-height'),
+            boxAspectRatio: document.getElementById('box-aspect-ratio'),
+            boxAngle: document.getElementById('box-angle'),
+            boxSpacing: document.getElementById('box-spacing'),
+            lineSpacing: document.getElementById('line-spacing'),
+            paperSize: document.getElementById('paper-size'),
+            paperWidth: document.getElementById('paper-width'),
+            paperHeight: document.getElementById('paper-height'),
+            marginTop: document.getElementById('margin-top'),
+            marginBottom: document.getElementById('margin-bottom'),
+            marginLeft: document.getElementById('margin-left'),
+            marginRight: document.getElementById('margin-right'),
+        };
+
+        let isImperial = false;
+        const MM_TO_IN = 0.0393701;
+        const IN_TO_MM = 25.4;
+
+        function adjustValue(id, amount, updateAR = false) {
+            const input = document.getElementById(id);
+            let currentValue = parseFloat(input.value);
+            if (isNaN(currentValue)) currentValue = 0;
+            let precision = (input.step.includes('.')) ? input.step.split('.')[1].length : 0;
+            input.value = (currentValue + amount).toFixed(precision);
+            if (updateAR) {
+                updateAspectRatio();
+            }
+            draw();
+        }
+        
+        function updateAspectRatio() {
+            const width = parseFloat(controls.boxWidth.value);
+            const height = parseFloat(controls.boxHeight.value);
+            if (height > 0) {
+                controls.boxAspectRatio.value = (width / height).toFixed(2);
+            }
+        }
+
+        function toggleUnits() {
+            isImperial = !isImperial;
+            document.getElementById('unit-toggle').textContent = isImperial ? 'Switch to Metric (mm)' : 'Switch to Imperial (in)';
+            
+            const fieldsToConvert = ['boxWidth', 'boxHeight', 'boxSpacing', 'lineSpacing', 'paperWidth', 'paperHeight', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight'];
+            
+            fieldsToConvert.forEach(field => {
+                const input = controls[field];
+                let value = parseFloat(input.value);
+                if (!isNaN(value)) {
+                    const conversionFactor = isImperial ? MM_TO_IN : IN_TO_MM;
+                    input.value = (value * conversionFactor).toFixed(2);
+                }
+            });
+            draw();
+        }
+
+        function handlePaperSizeChange() {
+            const selected = controls.paperSize.value;
+            if (selected === 'custom') {
+                document.getElementById('custom-paper-size').style.display = 'block';
+            } else {
+                document.getElementById('custom-paper-size').style.display = 'none';
+                const [width, height] = selected.split(',').map(parseFloat);
+                
+                let w = width;
+                let h = height;
+
+                if (isImperial) { // If currently in imperial, convert the metric standard sizes
+                    w = width * MM_TO_IN;
+                    h = height * MM_TO_IN;
+                }
+                
+                controls.paperWidth.value = w.toFixed(2);
+                controls.paperHeight.value = h.toFixed(2);
+            }
+            draw();
+        }
+
+        function autoFit() {
+            const N = parseInt(controls.numChars.value);
+            const aspectRatio = parseFloat(controls.boxAspectRatio.value);
+
+            let paperW = parseFloat(controls.paperWidth.value);
+            let paperH = parseFloat(controls.paperHeight.value);
+            let marginT = parseFloat(controls.marginTop.value);
+            let marginB = parseFloat(controls.marginBottom.value);
+            let marginL = parseFloat(controls.marginLeft.value);
+            let marginR = parseFloat(controls.marginRight.value);
+            let boxS = parseFloat(controls.boxSpacing.value);
+            let lineS = parseFloat(controls.lineSpacing.value);
+            
+            // Convert all to MM for calculation consistency
+            if (isImperial) {
+                paperW *= IN_TO_MM; paperH *= IN_TO_MM;
+                marginT *= IN_TO_MM; marginB *= IN_TO_MM;
+                marginL *= IN_TO_MM; marginR *= IN_TO_MM;
+                boxS *= IN_TO_MM; lineS *= IN_TO_MM;
+            }
+
+            const W_area = paperW - marginL - marginR;
+            const H_area = paperH - marginT - marginB;
+
+            if (W_area <= 0 || H_area <= 0 || N <= 0 || aspectRatio <= 0) {
+                alert("Cannot fit with current parameters. Please check paper size, margins, and character count.");
+                return;
+            }
+            
+            // Binary search for the optimal box height (h_box)
+            let low = 0.1;
+            let high = H_area;
+            let best_h = 0;
+            
+            for(let i=0; i<50; i++) { // 50 iterations are enough for high precision
+                let h_box = (low + high) / 2;
+                if (h_box === 0) break;
+                let w_box = h_box * aspectRatio;
+                
+                let cols = Math.floor((W_area + boxS) / (w_box + boxS));
+                if (cols === 0) cols = 1;
+                let rows = Math.ceil(N / cols);
+                
+                let H_total = (rows * h_box) + (Math.max(0, rows - 1) * lineS);
+                
+                if (H_total <= H_area) {
+                    best_h = h_box; // This fits, try for a larger size
+                    low = h_box;
+                } else {
+                    high = h_box; // This is too big, try smaller
+                }
+            }
+
+            let final_h = best_h;
+            let final_w = best_h * aspectRatio;
+
+            // Convert back to current display unit
+            if (isImperial) {
+                final_h *= MM_TO_IN;
+                final_w *= MM_TO_IN;
+            }
+
+            controls.boxHeight.value = final_h.toFixed(2);
+            controls.boxWidth.value = final_w.toFixed(2);
+            draw();
+        }
+
+        function draw() {
+            let pW_val = parseFloat(controls.paperWidth.value);
+            let pH_val = parseFloat(controls.paperHeight.value);
+
+            // Use mm for canvas scaling, convert if needed
+            let paperWidthMM = isImperial ? pW_val * IN_TO_MM : pW_val;
+            let paperHeightMM = isImperial ? pH_val * IN_TO_MM : pH_val;
+
+            const canvasContainer = document.querySelector('.canvas-container');
+            const containerWidth = canvasContainer.clientWidth - 40;
+            const containerHeight = canvasContainer.clientHeight - 40;
+
+            if (paperWidthMM <= 0 || paperHeightMM <= 0) return;
+
+            const scale = Math.min(containerWidth / paperWidthMM, containerHeight / paperHeightMM);
+
+            canvas.width = paperWidthMM * scale;
+            canvas.height = paperHeightMM * scale;
+
+            // Get all values for drawing, convert to MM if needed
+            const values = {};
+            for (const key in controls) {
+                values[key] = parseFloat(controls[key].value);
+                if (isImperial && ['boxWidth', 'boxHeight', 'boxSpacing', 'lineSpacing', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight'].includes(key)) {
+                    values[key] *= IN_TO_MM;
+                }
+            }
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const marginTop = values.marginTop * scale;
+            const marginBottom = values.marginBottom * scale;
+            const marginLeft = values.marginLeft * scale;
+            const marginRight = values.marginRight * scale;
+            
+            // Draw margin lines
+            ctx.strokeStyle = 'rgba(255, 0, 0, 0.5)';
+            ctx.setLineDash([5, 5]);
+            ctx.strokeRect(marginLeft, marginTop, canvas.width - marginLeft - marginRight, canvas.height - marginTop - marginBottom);
+            ctx.setLineDash([]);
+
+            const numChars = values.numChars;
+            const boxWidth = values.boxWidth * scale;
+            const boxHeight = values.boxHeight * scale;
+            const boxSpacing = values.boxSpacing * scale;
+            const lineSpacing = values.lineSpacing * scale;
+            const angle = values.boxAngle * (Math.PI / 180);
+
+            if (boxWidth <= 0 || boxHeight <= 0) return;
+
+            let x = marginLeft;
+            let y = marginTop;
+
+            ctx.strokeStyle = 'rgba(0, 0, 255, 0.7)';
+            ctx.lineWidth = 1;
+            
+            const writableWidth = canvas.width - marginLeft - marginRight;
+            const writableHeight = canvas.height - marginTop - marginBottom;
+
+            for (let i = 0; i
